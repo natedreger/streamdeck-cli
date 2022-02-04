@@ -12,7 +12,7 @@ from PySide2.QtCore import * # type: ignore
 from PySide2.QtGui import * # type: ignore
 from PySide2.QtWidgets import * # type: ignore
 
-from  . import resources_rc
+import resources_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -305,4 +305,3 @@ class Ui_MainWindow(object):
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"Write Text:", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
     # retranslateUi
-

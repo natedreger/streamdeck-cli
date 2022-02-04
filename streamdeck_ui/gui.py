@@ -23,10 +23,10 @@ from PySide2.QtWidgets import (
     QSystemTrayIcon,
 )
 
-from streamdeck_ui import api
-from streamdeck_ui.config import LOGO
-from streamdeck_ui.ui_main import Ui_MainWindow
-from streamdeck_ui.ui_settings import Ui_SettingsDialog
+import api
+from config import LOGO
+from ui_main import Ui_MainWindow
+from ui_settings import Ui_SettingsDialog
 
 BUTTON_STYLE = """
     QToolButton{background-color:black; color:white;}

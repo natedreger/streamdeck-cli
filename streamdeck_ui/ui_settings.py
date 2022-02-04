@@ -12,7 +12,7 @@ from PySide2.QtCore import * # type: ignore
 from PySide2.QtGui import * # type: ignore
 from PySide2.QtWidgets import * # type: ignore
 
-from  . import resources_rc
+import resources_rc
 
 class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
@@ -110,4 +110,3 @@ class Ui_SettingsDialog(object):
         self.label_brightness_dimmed.setText(QCoreApplication.translate("SettingsDialog", u"Dim to %:", None))
         self.dim.setCurrentText("")
     # retranslateUi
-
