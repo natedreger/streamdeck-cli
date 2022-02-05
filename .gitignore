@@ -1,3 +1,4 @@
+*.bak
 *.py[cod]
 .DS_Store
 # C extensions
@@ -85,4 +86,3 @@ docs/preconvert
 site/
 out
 .hypothesis
-

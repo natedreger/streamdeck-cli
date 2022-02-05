@@ -240,10 +240,21 @@ def set_button_keys(deck_id: str, page: int, button: int, keys: str) -> None:
         _button_state(deck_id, page, button)["keys"] = keys
         _save_state()
 
+#ND Add
+def set_button_midi(deck_id: str, page: int, button: int, midi: str) -> None:
+    """Sets the keys associated with the button"""
+    if get_button_midi(deck_id, page, button) != midi:
+        _button_state(deck_id, page, button)["midi"] = midi
+        _save_state()
 
 def get_button_keys(deck_id: str, page: int, button: int) -> str:
     """Returns the keys set for the specified button"""
     return _button_state(deck_id, page, button).get("keys", "")
+
+#ND Add
+def get_button_midi(deck_id: str, page: int, button: int) -> str:
+    """Returns the midi set for the specified button"""
+    return _button_state(deck_id, page, button).get("midi", "")
 
 
 def set_button_write(deck_id: str, page: int, button: int, write: str) -> None:
