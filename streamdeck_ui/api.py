@@ -216,10 +216,24 @@ def set_button_command(deck_id: str, page: int, button: int, command: str) -> No
         _button_state(deck_id, page, button)["command"] = command
         _save_state()
 
+#ND Add
+def set_button_command_type(deck_id: str, page: int, button: int, command_type: str) -> None:
+    """Sets the command associated with the button"""
+    if get_button_command_type(deck_id, page, button) != command_type:
+        _button_state(deck_id, page, button)["command_type"] = command_type
+        _save_state()
 
 def get_button_command(deck_id: str, page: int, button: int) -> str:
     """Returns the command set for the specified button"""
     return _button_state(deck_id, page, button).get("command", "")
+
+#ND Add
+def get_button_command_type(deck_id: str, page: int, button: int) -> str:
+    """Returns the command set for the specified button"""
+    type = _button_state(deck_id, page, button).get("command_type", "")
+    if type == '':
+        type = 'Command Type'
+    return type
 
 
 def set_button_switch_page(deck_id: str, page: int, button: int, switch_page: int) -> None:
@@ -241,10 +255,10 @@ def set_button_keys(deck_id: str, page: int, button: int, keys: str) -> None:
         _save_state()
 
 #ND Add
-def set_button_midi(deck_id: str, page: int, button: int, midi: str) -> None:
+def set_button_command_string(deck_id: str, page: int, button: int, command_string: str) -> None:
     """Sets the keys associated with the button"""
-    if get_button_midi(deck_id, page, button) != midi:
-        _button_state(deck_id, page, button)["midi"] = midi
+    if get_button_command_string(deck_id, page, button) != command_string:
+        _button_state(deck_id, page, button)["command_string"] = command_string
         _save_state()
 
 def get_button_keys(deck_id: str, page: int, button: int) -> str:
@@ -252,9 +266,9 @@ def get_button_keys(deck_id: str, page: int, button: int) -> str:
     return _button_state(deck_id, page, button).get("keys", "")
 
 #ND Add
-def get_button_midi(deck_id: str, page: int, button: int) -> str:
-    """Returns the midi set for the specified button"""
-    return _button_state(deck_id, page, button).get("midi", "")
+def get_button_command_string(deck_id: str, page: int, button: int) -> str:
+    """Returns the command_string set for the specified button"""
+    return _button_state(deck_id, page, button).get("command_string", "")
 
 
 def set_button_write(deck_id: str, page: int, button: int, write: str) -> None:

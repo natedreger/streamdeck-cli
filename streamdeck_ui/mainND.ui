@@ -322,12 +322,22 @@
               </item>
               <item>
                <property name="text">
+                <string>Page</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
                 <string>Text</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Key Stroke</string>
+                <string>Set Brightness</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Keystroke</string>
                </property>
               </item>
               <item>
@@ -336,130 +346,6 @@
                </property>
               </item>
              </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="horizontalLayoutWidget_3">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>217</y>
-             <width>223</width>
-             <height>27</height>
-            </rect>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
-            <item>
-             <widget class="QLabel" name="label_4">
-              <property name="text">
-               <string>Command:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="command"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="horizontalLayoutWidget_4">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>250</y>
-             <width>226</width>
-             <height>27</height>
-            </rect>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
-            <item>
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Press Keys:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="keys"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="horizontalLayoutWidget_5">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>283</y>
-             <width>142</width>
-             <height>28</height>
-            </rect>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
-            <item>
-             <widget class="QLabel" name="label_8">
-              <property name="text">
-               <string>Switch Page:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="switch_page">
-              <property name="minimum">
-               <number>0</number>
-              </property>
-              <property name="maximum">
-               <number>10</number>
-              </property>
-              <property name="value">
-               <number>0</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="horizontalLayoutWidget_6">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>317</y>
-             <width>160</width>
-             <height>28</height>
-            </rect>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_8">
-            <item>
-             <widget class="QLabel" name="label_7">
-              <property name="text">
-               <string>Brightness +/-:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="change_brightness">
-              <property name="minimum">
-               <number>-99</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="horizontalLayoutWidget_7">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>351</y>
-             <width>640</width>
-             <height>194</height>
-            </rect>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
-            <item>
-             <widget class="QLabel" name="label_6">
-              <property name="text">
-               <string>Text</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPlainTextEdit" name="write"/>
             </item>
            </layout>
           </widget>
@@ -476,12 +362,12 @@
             <item>
              <widget class="QLabel" name="label_10">
               <property name="text">
-               <string>MIDI</string>
+               <string>Command String:</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="midi"/>
+             <widget class="QLineEdit" name="command_string"/>
             </item>
            </layout>
           </widget>

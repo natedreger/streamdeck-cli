@@ -225,8 +225,12 @@ def _replace_special_keys(key):
         return key.lower()
     return key
 
-
+# ND Add
+# Physical Device
 def handle_keypress(deck_id: str, key: int, state: bool) -> None:
+    internal_command = {}
+    external_command = {}
+    external_commands = ['OSC', 'MIDI', 'MQTT']
     if state:
         if dimmers[deck_id].reset():
             return
@@ -234,77 +238,182 @@ def handle_keypress(deck_id: str, key: int, state: bool) -> None:
         keyboard = Controller()
         page = api.get_page(deck_id)
 
-        print(api.get_button_text(deck_id, page, key))
-        command = api.get_button_command(deck_id, page, key)
-        if command:
-            try:
-                Popen(shlex.split(command))
-            except Exception as error:
-                print(f"The command '{command}' failed: {error}")
+        if api.get_button_command_type(deck_id, page, key) in external_commands:
+            external_command = {"command_type":api.get_button_command_type(deck_id, page, key), "command_string":api.get_button_command_string(deck_id, page, key)}
+        else:
+            internal_command = {"command_type":api.get_button_command_type(deck_id, page, key), "command_string":api.get_button_command_string(deck_id, page, key)}
 
-        keys = api.get_button_keys(deck_id, page, key)
-        if keys:
-            keys = keys.strip().replace(" ", "")
-            for section in keys.split(","):
-                # Since + and , are used to delimit our section and keys to press,
-                # they need to be substituted with keywords.
-                section_keys = [_replace_special_keys(key_name) for key_name in section.split("+")]
+        if external_command:
+            # queue.put(external_command)
+            print(f"External: {external_command}")
 
-                # Translate string to enum, or just the string itself if not found
-                section_keys = [
-                    getattr(Key, key_name.lower(), key_name) for key_name in section_keys
-                ]
+        if internal_command:
+            print(f"Internal: {internal_command}")
 
-                for key_name in section_keys:
-                    if isinstance(key_name, str) and key_name.startswith("delay"):
-                        sleep_time_arg = key_name.split("delay", 1)[1]
-                        if sleep_time_arg:
-                            try:
-                                sleep_time = float(sleep_time_arg)
-                            except Exception:
-                                print(f"Could not convert sleep time to float '{sleep_time_arg}'")
-                                sleep_time = 0
+            command = internal_command['command_type'] == 'Command'
+            if command:
+                try:
+                    Popen(shlex.split(internal_command['command_string']))
+                except Exception as error:
+                    print(f"The command '{internal_command['command_string']}' failed: {error}")
+
+            keys = internal_command['command_type'] == 'Keystroke'
+            if keys:
+                keys = internal_command['command_string']
+                keys = keys.strip().replace(" ", "")
+                for section in keys.split(","):
+                    # Since + and , are used to delimit our section and keys to press,
+                    # they need to be substituted with keywords.
+                    section_keys = [_replace_special_keys(key_name) for key_name in section.split("+")]
+
+                    # Translate string to enum, or just the string itself if not found
+                    section_keys = [
+                        getattr(Key, key_name.lower(), key_name) for key_name in section_keys
+                    ]
+
+                    for key_name in section_keys:
+                        if isinstance(key_name, str) and key_name.startswith("delay"):
+                            sleep_time_arg = key_name.split("delay", 1)[1]
+                            if sleep_time_arg:
+                                try:
+                                    sleep_time = float(sleep_time_arg)
+                                except Exception:
+                                    print(f"Could not convert sleep time to float '{sleep_time_arg}'")
+                                    sleep_time = 0
+                            else:
+                                # default if not specified
+                                sleep_time = 0.5
+
+                            if sleep_time:
+                                try:
+                                    time.sleep(sleep_time)
+                                except Exception:
+                                    print(f"Could not sleep with provided sleep time '{sleep_time}'")
                         else:
-                            # default if not specified
-                            sleep_time = 0.5
-
-                        if sleep_time:
                             try:
-                                time.sleep(sleep_time)
+                                keyboard.press(key_name)
                             except Exception:
-                                print(f"Could not sleep with provided sleep time '{sleep_time}'")
-                    else:
-                        try:
-                            keyboard.press(key_name)
-                        except Exception:
-                            print(f"Could not press key '{key_name}'")
+                                print(f"Could not press key '{key_name}'")
 
-                for key_name in section_keys:
-                    if not (isinstance(key_name, str) and key_name.startswith("delay")):
-                        try:
-                            keyboard.release(key_name)
-                        except Exception:
-                            print(f"Could not release key '{key_name}'")
+                    for key_name in section_keys:
+                        if not (isinstance(key_name, str) and key_name.startswith("delay")):
+                            try:
+                                keyboard.release(key_name)
+                            except Exception:
+                                print(f"Could not release key '{key_name}'")
 
-        write = api.get_button_write(deck_id, page, key)
-        if write:
-            try:
-                keyboard.type(write)
-            except Exception as error:
-                print(f"Could not complete the write command: {error}")
+            write = internal_command['command_type'] == "Text"
+            if write:
+                try:
+                    keyboard.type(internal_command['command_string'])
+                except Exception as error:
+                    print(f"Could not complete the write command: {error}")
 
-        brightness_change = api.get_button_change_brightness(deck_id, page, key)
-        if brightness_change:
-            try:
-                api.change_brightness(deck_id, brightness_change)
-                dimmers[deck_id].brightness = api.get_brightness(deck_id)
-                dimmers[deck_id].reset()
-            except Exception as error:
-                print(f"Could not change brightness: {error}")
+            # Set absolute brightness
+            set_brightness = internal_command['command_type'] == 'Set Brightness'
+            if set_brightness:
+                try:
+                    api.set_brightness(deck_id, int(internal_command['command_string']))
+                    dimmers[deck_id].brightness = api.get_brightness(deck_id)
+                    dimmers[deck_id].reset()
+                except Exception as error:
+                    print(f"Could not change brightness: {error}")
 
-        switch_page = api.get_button_switch_page(deck_id, page, key)
-        if switch_page:
-            api.set_page(deck_id, switch_page - 1)
+            # Dim by percentage
+            change_brightness = internal_command['command_type'] == 'Brightness'
+            if set_brightness:
+                try:
+                    api.change_brightness(deck_id, int(internal_command['command_string']))
+                    dimmers[deck_id].brightness = api.get_brightness(deck_id)
+                    dimmers[deck_id].reset()
+                except Exception as error:
+                    print(f"Could not change brightness: {error}")
+
+            switch_page = internal_command['command_type'] == 'Page'
+            if switch_page:
+                api.set_page(deck_id, int(internal_command['command_string']) - 1)
+
+
+# # Physical Device
+# def handle_keypress(deck_id: str, key: int, state: bool) -> None:
+#     if state:
+#         if dimmers[deck_id].reset():
+#             return
+#
+#         keyboard = Controller()
+#         page = api.get_page(deck_id)
+#
+#         print(api.get_button_text(deck_id, page, key))
+#         command = api.get_button_command(deck_id, page, key)
+#         if command:
+#             try:
+#                 Popen(shlex.split(command))
+#             except Exception as error:
+#                 print(f"The command '{command}' failed: {error}")
+#
+#         keys = api.get_button_keys(deck_id, page, key)
+#         if keys:
+#             keys = keys.strip().replace(" ", "")
+#             for section in keys.split(","):
+#                 # Since + and , are used to delimit our section and keys to press,
+#                 # they need to be substituted with keywords.
+#                 section_keys = [_replace_special_keys(key_name) for key_name in section.split("+")]
+#
+#                 # Translate string to enum, or just the string itself if not found
+#                 section_keys = [
+#                     getattr(Key, key_name.lower(), key_name) for key_name in section_keys
+#                 ]
+#
+#                 for key_name in section_keys:
+#                     if isinstance(key_name, str) and key_name.startswith("delay"):
+#                         sleep_time_arg = key_name.split("delay", 1)[1]
+#                         if sleep_time_arg:
+#                             try:
+#                                 sleep_time = float(sleep_time_arg)
+#                             except Exception:
+#                                 print(f"Could not convert sleep time to float '{sleep_time_arg}'")
+#                                 sleep_time = 0
+#                         else:
+#                             # default if not specified
+#                             sleep_time = 0.5
+#
+#                         if sleep_time:
+#                             try:
+#                                 time.sleep(sleep_time)
+#                             except Exception:
+#                                 print(f"Could not sleep with provided sleep time '{sleep_time}'")
+#                     else:
+#                         try:
+#                             keyboard.press(key_name)
+#                         except Exception:
+#                             print(f"Could not press key '{key_name}'")
+#
+#                 for key_name in section_keys:
+#                     if not (isinstance(key_name, str) and key_name.startswith("delay")):
+#                         try:
+#                             keyboard.release(key_name)
+#                         except Exception:
+#                             print(f"Could not release key '{key_name}'")
+#
+#         write = api.get_button_write(deck_id, page, key)
+#         if write:
+#             try:
+#                 keyboard.type(write)
+#             except Exception as error:
+#                 print(f"Could not complete the write command: {error}")
+#
+#         brightness_change = api.get_button_change_brightness(deck_id, page, key)
+#         if brightness_change:
+#             try:
+#                 api.change_brightness(deck_id, brightness_change)
+#                 dimmers[deck_id].brightness = api.get_brightness(deck_id)
+#                 dimmers[deck_id].reset()
+#             except Exception as error:
+#                 print(f"Could not change brightness: {error}")
+#
+#         switch_page = api.get_button_switch_page(deck_id, page, key)
+#         if switch_page:
+#             api.set_page(deck_id, switch_page - 1)
 
 
 def _deck_id(ui) -> str:
@@ -328,16 +437,16 @@ def update_button_command(ui, command: str) -> None:
 # ND Add
 def update_button_command_type(ui, command_type: str) -> None:
     deck_id = _deck_id(ui)
-    api.set_button_command(deck_id, _page(ui), selected_button.index, command_type)
+    api.set_button_command_type(deck_id, _page(ui), selected_button.index, command_type)
 
 def update_button_keys(ui, keys: str) -> None:
     deck_id = _deck_id(ui)
     api.set_button_keys(deck_id, _page(ui), selected_button.index, keys)
 
 #ND Add
-def update_button_midi(ui, midi: str) -> None:
+def update_button_command_string(ui, command_string: str) -> None:
     deck_id = _deck_id(ui)
-    api.set_button_midi(deck_id, _page(ui), selected_button.index, midi)
+    api.set_button_command_string(deck_id, _page(ui), selected_button.index, command_string)
 
 def update_button_write(ui) -> None:
     deck_id = _deck_id(ui)
@@ -448,26 +557,21 @@ def set_brightness_dimmed(ui, value: int, full_brightness: int) -> None:
     dimmers[deck_id].brightness_dimmed = int(full_brightness * (value / 100))
     dimmers[deck_id].reset()
 
-
+# GUI selection
 def button_clicked(ui, clicked_button, buttons) -> None:
     global selected_button
     selected_button = clicked_button
     for button in buttons:
         if button == clicked_button:
             continue
-
         button.setChecked(False)
 
     deck_id = _deck_id(ui)
     button_id = selected_button.index
     ui.text.setText(api.get_button_text(deck_id, _page(ui), button_id))
-    ui.command.setText(api.get_button_command(deck_id, _page(ui), button_id))
-    ui.keys.setText(api.get_button_keys(deck_id, _page(ui), button_id))
     #ND Add
-    ui.midi.setText(api.get_button_midi(deck_id, _page(ui), button_id))
-    ui.write.setPlainText(api.get_button_write(deck_id, _page(ui), button_id))
-    ui.change_brightness.setValue(api.get_button_change_brightness(deck_id, _page(ui), button_id))
-    ui.switch_page.setValue(api.get_button_switch_page(deck_id, _page(ui), button_id))
+    ui.command_type.setCurrentText(api.get_button_command_type(deck_id, _page(ui), button_id))
+    ui.command_string.setText(api.get_button_command_string(deck_id, _page(ui), button_id))
     dimmers[deck_id].reset()
 
 
@@ -692,13 +796,8 @@ def start(_exit: bool = False) -> None:
     tray.setContextMenu(menu)
 
     ui.text.textChanged.connect(partial(queue_text_change, ui))
-    # ui.command_type.textChanged.connect(partial(update_button_command_type, ui))
-    ui.command.textChanged.connect(partial(update_button_command, ui))
-    ui.midi.textChanged.connect(partial(update_button_midi, ui))
-    ui.keys.textChanged.connect(partial(update_button_keys, ui))
-    ui.write.textChanged.connect(partial(update_button_write, ui))
-    ui.change_brightness.valueChanged.connect(partial(update_change_brightness, ui))
-    ui.switch_page.valueChanged.connect(partial(update_switch_page, ui))
+    ui.command_type.currentTextChanged.connect(partial(update_button_command_type, ui))
+    ui.command_string.textChanged.connect(partial(update_button_command_string, ui))
     ui.imageButton.clicked.connect(partial(select_image, main_window, 'Pressed'))
     ui.imageButton_2.clicked.connect(partial(select_image, main_window, 'Released'))
     ui.removeButton.clicked.connect(partial(remove_image, main_window))
