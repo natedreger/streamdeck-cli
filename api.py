@@ -158,7 +158,7 @@ def get_page(deck_id: str) -> int:
     """Gets the current page shown on the stream deck"""
     return state.get(deck_id, {}).get("page", 0)  # type: ignore
 
-def render() -> None:
+def render(decks) -> None:
     """renders all decks"""
     for deck_id, deck_state in state.items():
         deck = decks.get(deck_id, None)

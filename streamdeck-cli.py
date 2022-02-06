@@ -13,9 +13,14 @@
 import os
 import threading
 
+import api
 from PIL import Image, ImageDraw, ImageFont
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.ImageHelpers import PILHelper
+from StreamDeck.Devices import StreamDeck
+from typing import Dict, Tuple, Union, cast
+
+decks: Dict[str, StreamDeck.StreamDeck] = {}
 
 # Folder location of image assets used by this example.
 ASSETS_PATH = os.path.join(os.path.dirname(__file__), "Assets")
@@ -111,9 +116,12 @@ if __name__ == "__main__":
 
     for index, deck in enumerate(streamdecks):
         deck.open()
-        deck_id = deck.get_serial_number()
-        print(deck_id)
         deck.reset()
+        deck_id = deck.get_serial_number()
+        decks[deck_id] = deck
+        items = decks.items()
+        for deck_id, deck in items:
+            print(deck_id)
 
         print("Opened '{}' device (serial number: '{}')".format(deck.deck_type(), deck.get_serial_number()))
 
@@ -126,7 +134,7 @@ if __name__ == "__main__":
 
         # Register callback function for when a key state changes.
         deck.set_key_callback(key_change_callback)
-
+        api.render(decks)
         # Wait until all application threads have terminated (for this example,
         # this is when all deck handles are closed).
         for t in threading.enumerate():
