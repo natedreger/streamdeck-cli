@@ -1,8 +1,11 @@
+#!././venv/bin/python3
+
 """Defines the QT powered interface for configuring Stream Decks"""
 import os
 import shlex
 import sys
 import time
+import json
 from functools import partial
 from subprocess import Popen  # nosec - Need to allow users to specify arbitrary commands
 from typing import Callable, Dict
@@ -245,10 +248,11 @@ def handle_keypress(deck_id: str, key: int, state: bool) -> None:
 
         if external_command:
             # queue.put(external_command)
-            print(f"External: {external_command}")
+            # print(f"External: {external_command}")
+            print(json.dumps(external_command), file = sys.stdout)
 
         if internal_command:
-            print(f"Internal: {internal_command}")
+            # print(f"Internal: {internal_command}")
 
             command = internal_command['command_type'] == 'Command'
             if command:
@@ -332,6 +336,11 @@ def handle_keypress(deck_id: str, key: int, state: bool) -> None:
             switch_page = internal_command['command_type'] == 'Page'
             if switch_page:
                 api.set_page(deck_id, int(internal_command['command_string']) - 1)
+
+            CloseStreamDeck = internal_command['command_type'] == 'CloseStreamDeck'
+            if CloseStreamDeck:
+                api.close_decks()
+                sys.exit()
 
 
 # # Physical Device
@@ -773,6 +782,7 @@ def start(_exit: bool = False) -> None:
         print("  -n, --no-ui\tRun the program without showing a UI")
         return
     elif "-n" in sys.argv or "--no-ui" in sys.argv:
+        print('No UI')
         show_ui = False
 
     logo = QIcon(LOGO)
@@ -852,6 +862,6 @@ def start(_exit: bool = False) -> None:
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     main_window = MainWindow()
-    main_window.show()
+    # main_window.show()
     start()
     sys.exit(app.exec())
